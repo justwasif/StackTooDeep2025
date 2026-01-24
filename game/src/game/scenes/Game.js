@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 
-const HEIGHT_WIDTH_RATIO = Math.sqrt(2);
+const HEIGHT_WIDTH_RATIO = 1.4137;
 const HEX_WIDTH_RATIO = 0.29;
 const TILE_SIZE = 175;
 const HEX_WIDTH = TILE_SIZE * HEX_WIDTH_RATIO * HEIGHT_WIDTH_RATIO;
@@ -27,22 +27,6 @@ export class Game extends Scene {
 
         this.add.image(512, 384, 'background').setAlpha(0.5);
 
-        this.add.image(512, 698, "cardPanel");
-
-        this.buttons = this.add.container();
-        for (let i = 1; i < 6; i++) {
-            const btn = this.add.image(-42 + i*100, 698, "card-" + i.toString())
-                .setInteractive({ useHandCursor: true })
-                .setScrollFactor(0);
-
-            btn.on('pointerover', () => btn.setAlpha(0.8));
-            btn.on('pointerout', () => btn.setAlpha(1));
-            btn.on('pointerdown', () => btn.setScale(0.95));
-            btn.on('pointerup', () => btn.setScale(1));
-
-            //  this.buttons.add([btn]);
-        }
-
         // Create status text at the top
         this.statusText = this.add.text(512, 30, 'Connecting...', {
             fontFamily: 'Arial',
@@ -53,27 +37,14 @@ export class Game extends Scene {
             align: 'center'
         }).setOrigin(0.5);
 
-        this.mapRNG = new Phaser.Math.RandomDataGenerator(["12345"]);
-
         // Create tile map
-        const tile_map = this.physics.add.group();
-        let playerX=0;
-        let playerY=0;
+        const tile_map = this.physics.add.staticGroup();
+
         for (let i = 1; i < 19; i++) {
-            for (let j = 1; j < 12; j++) {
+            for (let j = 1; j < 14; j++) {
                 const x = i * (HEX_WIDTH * 0.75);
                 const y = j * HEX_HEIGHT + (i % 2) * (HEX_HEIGHT / 2) + 14;
                 const tile = tile_map.create(x, y, 'tile');
-                tile.door_list = [];
-
-                for (let door_i = 0; door_i<6;door_i++) {
-                    tile.door_list.push(this.mapRNG.integerInRange(0,2) === 0 ? 0 : 1);
-                }
-
-                if (i === 6 && j === 7){
-                    playerX = x;
-                    playerY = y;
-                }
 
                 tile
                     .setOrigin(0.5, 0.5)
@@ -84,84 +55,26 @@ export class Game extends Scene {
         }
 
         // Create both players
-        this.player = this.physics.add.sprite(playerX, playerY, 'player');
-        // this.player.setTint(0x00ff00); // Green for you
+        this.player = this.physics.add.sprite(100, 450, 'player');
+        this.player.setTint(0x00ff00); // Green for you
 
-        // this.opponent = this.physics.add.sprite(900, 450, 'player');
-        // this.opponent.setTint(0xff0000); // Red for opponent
+        this.opponent = this.physics.add.sprite(900, 450, 'player');
+        this.opponent.setTint(0xff0000); // Red for opponent
 
         // Setup tile click handlers - FIXED: pass tile object correctly
         tile_map.children.iterate(tile => {
             tile.on("pointerdown", () => {
-                this.onTileClick(tile);
+                this.handleTileClick(tile);
             });
         });
 
-        // this.anims.create({
-        //     key: 'doorOpen',
-        //     frameRate: 5,
-        //     repeat: 3,
-        //     frames: this.anims.generateFrameNames('tile', {start: 0, end: 3}),
-        // })
-        //
-        // this.anims.create({
-        //     key: 'doorClose',
-        //     frameRate: 5,
-        //     repeat: 3,
-        //     frames: this.anims.generateFrameNames('tile', {start: 4, end: 7}),
-        // })
-
         // Connect to WebSocket server
-        // this.connectWebSocket();
+        this.connectWebSocket();
     }
 
     // update(time, delta) {
     //     const p = this.input.activePointer;
     // }
-
-    onTileClick (tile){
-        const centerX = tile.x - HEX_WIDTH*HEIGHT_WIDTH_RATIO;
-        const centerY = tile.y - HEX_HEIGHT;
-        const vector = new Phaser.Math.Vector2(
-            centerX - this.player.x,
-            centerY - this.player.y
-        );
-        const distance = vector.length();
-        const direction = vector.normalize()
-        let index;
-        console.log(distance, HEX_HEIGHT, HEX_WIDTH, HEX_WIDTH*0.8666)
-        if (direction.x === 0){
-            if (direction.y === 1){
-                index = 3;
-            } else {
-                index = 0;
-            }
-        } else if (direction.x > 0){
-            if (direction.y < 0){
-                index = 1;
-            } else {
-                index = 2;
-            }
-        } else if (direction.x < 0){
-            if (direction.y < 6){
-                index = 5;
-            } else {
-                index = 4;
-            }
-        }
-        if (distance < HEX_WIDTH * Math.sqrt(3) / 2) {
-            const door_state =  tile.door_list[index];
-            if (door_state === 0){
-                //  tile.anims.play("doorClose");
-                console.log("door band hai")
-            } else {
-                // tile.anims.play("doorOpen");
-                console.log("door khula hai")
-                this.player.setPosition(centerX, centerY);
-            }
-        }
-
-    }
 
     connectWebSocket() {
         const token = localStorage.getItem('accessToken');
