@@ -43,7 +43,7 @@ export class Preloader extends Scene
         //     startFrame: 0,
         // } )
 
-        this.load.image("tile", "Tiles/Base_tile.png",)
+        this.load.image("tile", "Tiles/pixel_tile.png",)
         this.load.image("cardPanel", "UI/card_panel_drawn.png");
 
         for (let i=1; i<6; i++) {
@@ -53,8 +53,7 @@ export class Preloader extends Scene
 
         this.load.image("background", "UI/background.jpg");
 
-        this.load.audio("");
-
+        this.load.audio("cardSound", "audio/cardAudio.mp3");
 
     }
 

@@ -8,10 +8,16 @@ import { AUTO, Game } from 'phaser';
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
 const config = {
-    type: AUTO,
+    type: Phaser.WEBGL,
     width: 1024,
     height: 768,
     parent: 'game-container',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    },
     backgroundColor: '#028af8',
     scale: {
         mode: Phaser.Scale.FIT,
