@@ -53,6 +53,8 @@ export class Preloader extends Scene
 
         this.load.image("background", "UI/background.jpg");
 
+        this.load.audio("");
+
 
     }
 
