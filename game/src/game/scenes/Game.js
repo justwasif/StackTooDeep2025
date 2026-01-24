@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { generateMoveProof } from '../utils/zkProver.js';
 
 const HEIGHT_WIDTH_RATIO = Math.sqrt(2);
 const HEX_WIDTH_RATIO = 1;
@@ -55,7 +56,9 @@ export class Game extends Scene {
 
         const allTiles = [];
 
+        this.mapCommitment = [];
         for (let i = 2; i < 8; i++) {
+            let mapRow =[];
             for (let j = 1; j < 5; j++) {
                 const x = i * (HEX_WIDTH * 0.75);
                 const y = j * HEX_HEIGHT + (i % 2) * (HEX_HEIGHT / 2) + 14;
@@ -67,7 +70,7 @@ export class Game extends Scene {
                 for (let door_i = 0; door_i < 6; door_i++) {
                     tile.door_list.push(this.mapRNG.integerInRange(0, 3) === 0 ? 0 : 1);
                 }
-
+                mapRow.push(tile.door_list);
                 if (i === this.playerIndex && j === Y_INDEX) {
                     playerX = x;
                     playerY = y;
@@ -88,6 +91,7 @@ export class Game extends Scene {
 
                 allTiles.push(tile);
             }
+            this.mapCommitment.push(mapRow);
         }
 
         // Select random winning tile (not starting positions)
@@ -363,8 +367,8 @@ void main(void) {
         });
     }
 
-    onTileClick(tile, pointer) {
-        if (!this.player || this.currentTurn !== this.playerNumber){
+    async onTileClick(tile, pointer) {
+        if (!this.player || this.currentTurn !== this.playerNumber) {
             console.log(this.player, this.playerNumber, this.currentTurn);
             return;
         }
@@ -383,7 +387,7 @@ void main(void) {
             this.cardInstructionText.setText('Doors blocked!');
 
             // Visual feedback
-            const flash = this.add.circle(centerX, centerY, HEX_WIDTH/2, 0xff0000, 0.3);
+            const flash = this.add.circle(centerX, centerY, HEX_WIDTH / 2, 0xff0000, 0.3);
             this.tweens.add({
                 targets: flash,
                 alpha: 0,
@@ -424,7 +428,7 @@ void main(void) {
         } else {
             index = direction.y < 6 ? 5 : 4;
         }
-        console.log(distance, HEX_WIDTH*0.8666);
+        console.log(distance, HEX_WIDTH * 0.8666);
         if (distance < HEX_WIDTH * Math.sqrt(3) / 2) {
             const door_state = this.active_tile.door_list[index];
 
@@ -444,21 +448,78 @@ void main(void) {
                 this.showDoorOpenEffect(pointer);
                 this.previousTile = this.active_tile;
                 this.active_tile = tile;
-                this.player.setPosition(centerX, centerY);
 
-                // Check if player reached winning tile
-                if (tile === this.winning_tile) {
-                    this.handleWin();
+                const oldX = Math.floor(this.player.x);
+                const oldY = Math.floor(this.player.y);
+                const newX = Math.floor(centerX);
+                const newY = Math.floor(centerY);
+
+                // Show loading state
+                if (this.statusText) {
+                    this.statusText.setText('🔐 Generating proof...');
                 }
 
-                // Send move to server
+                // Check if we have map commitment
+                if (!this.mapCommitment) {
+                    throw new Error('Map commitment not received from server');
+                }
+
+                // Prepare circuit inputs
+                const zkInput = {
+                    oldX: oldX,
+                    oldY: oldY,
+                    newX: newX,
+                    newY: newY,
+                    mapHash: this.mapCommitment.map_hash,
+                    ramActive: 0, // TODO: Check if RAM card is active
+                    mapGrid: this.mapCommitment.grid_layout,
+                    salt: this.mapCommitment.map_salt
+                };
+
+                console.log('🔐 Starting proof generation...');
+
+                // Generate the proof (this takes ~100-500ms)
+                const {proof, publicSignals} = await generateMoveProof(zkInput);
+
+                console.log('✅ Proof generated successfully!');
+
+                // Update UI
+                if (this.statusText) {
+                    this.statusText.setText(
+                        this.currentTurn === this.playerNumber ? 'YOUR TURN' : 'OPPONENT\'S TURN'
+                    );
+                }
+
+                // Update local position
+                this.player.setPosition(centerX, centerY);
+
+                // Send move with proof to server
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                     this.ws.send(JSON.stringify({
                         type: 'move',
-                        x: centerX,
-                        y: centerY,
-                        matchId: this.matchId
+                        x: newX,
+                        y: newY,
+                        matchId: this.matchId,
+                        proof: proof,
+                        publicSignals: publicSignals
                     }));
+
+                    this.player.setPosition(centerX, centerY);
+
+                    // Check if player reached winning tile
+                    if (tile === this.winning_tile) {
+                        this.handleWin();
+                    }
+
+                    // Send move to server
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({
+                            type: 'move',
+                            x: centerX,
+                            y: centerY,
+                            matchId: this.matchId
+                        }));
+                    }
                 }
             }
         }
