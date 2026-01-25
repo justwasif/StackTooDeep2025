@@ -144,7 +144,7 @@ const Home = () => {
       </section>
 
       <footer className="py-8 text-center text-gray-600 text-sm">
-        <p>by-IIT ROORKEE</p>
+        <p>BY IIT ROORKEE STUDENTS</p>
       </footer>
     </div>
   );
