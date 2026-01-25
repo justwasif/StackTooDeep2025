@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useAccount, useWriteContract } from "wagmi";
-import { NFT_ADDRESS, NFT_ABI } from "../constants";
+import { NFT_ADDRESS, NFT_ABI ,GAME_LEDGER_ABI} from "../constants";
+
 
 const DOG1_URI =
   "ipfs://Qmdk2b6VUemWYkfcfSVvGxBkRG5GBcxwkWrZeTomRzNTAD";
@@ -57,6 +58,25 @@ export default function BasicNft() {
       setMinting(false);
     }
   }
+  async function withdrawPrize() {
+  if (!isConnected) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  try {
+    const tx = await writeContractAsync({
+      address: "0x23D18f6fdd0cE26bCCa09E493B9326049dD83648",
+      abi: GAME_LEDGER_ABI,
+      functionName: "withdraw",
+    });
+
+    console.log("Withdraw success:", tx);
+  } catch (err) {
+    console.error(err);
+    alert("Withdraw failed");
+  }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -71,6 +91,13 @@ export default function BasicNft() {
         >
           {minting ? "Minting Random winning reward ..." : "Mint Random winning reward "}
         </button>
+        <button
+        onClick={withdrawPrize}
+        className="px-8 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-lg"
+      >
+        Withdraw Prize
+      </button>
+
       </div>
     </div>
   );
