@@ -1,153 +1,408 @@
-# Phaser Vite Template
+# 🎮 Ghee Khatam - Zero-Knowledge Strategy Game
 
-This is a Phaser 3 project template that uses Vite for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
+<div align="center">
 
-**[This Template is also available as a TypeScript version.](https://github.com/phaserjs/template-vite-ts)**
+![Ghee Khatam Banner](https://img.shields.io/badge/ZK--Powered-Game-green?style=for-the-badge)
+![Sepolia Testnet](https://img.shields.io/badge/Network-Sepolia-blue?style=for-the-badge)
+![Hackathon](https://img.shields.io/badge/StackTooDeep-v3.0-purple?style=for-the-badge)
 
-### Versions
+**The world's first server-authoritative Zero-Knowledge strategy game where trust is mathematical, not assumed.**
 
-This template has been updated for:
+[Live Demo](#) • [Documentation](#features) • [Architecture](#architecture) • [Team](#team)
 
-- [Phaser 3.90.0](https://github.com/phaserjs/phaser)
-- [Vite 6.3.1](https://github.com/vitejs/vite)
+</div>
 
-![screenshot](screenshot.png)
+---
 
-## Requirements
+## 📖 Table of Contents
 
-[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+- [Overview](#overview)
+- [The Problem We Solve](#the-problem-we-solve)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Game Mechanics](#game-mechanics)
+- [Smart Contracts](#smart-contracts)
+- [Getting Started](#getting-started)
+- [Team](#team)
+- [Acknowledgments](#acknowledgments)
 
-## Available Commands
+---
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
-| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
-| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+## 🎯 Overview
 
+**Ghee Khatam** is a groundbreaking multiplayer strategy game that combines blockchain technology with Zero-Knowledge proofs to create a trustless, verifiable gaming experience. Unlike traditional online games where players must trust the server, our game cryptographically proves every move is valid without revealing hidden information.
 
-## Writing Code
+Built for **StackTooDeep v3.0** hackathon organized by the Blockchain Society of IIT Roorkee.
 
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+---
 
-The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
+## 🔍 The Problem We Solve
 
-Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
+### Traditional Online Gaming Issues:
+- **Server Trust**: Players must blindly trust game servers
+- **Hidden State**: No way to verify fairness of hidden information
+- **Cheating**: Server-side manipulation is undetectable
+- **Centralization**: Single point of failure and control
 
-## Template Project Structure
+### Our Solution:
+- **ZK-SNARKs**: Cryptographically prove move validity without revealing the map
+- **Blockchain Verification**: All game states are verifiable on-chain
+- **Trustless Gameplay**: Math, not trust, ensures fairness
+- **Transparency**: Open-source smart contracts and circuits
 
-We have provided a default project structure to get you started. This is as follows:
+---
 
-| Path                         | Description                                                |
-|------------------------------|------------------------------------------------------------|
-| `index.html`                 | A basic HTML page to contain the game.                     |
-| `public/assets`              | Game sprites, audio, etc. Served directly at runtime.      |
-| `public/style.css`           | Global layout styles.                                      |
-| `src/main.js`                | Application bootstrap.                                     |
-| `src/game`                   | Folder containing the game code.                           |
-| `src/game/main.js`           | Game entry point: configures and starts the game.          |
-| `src/game/scenes`            | Folder with all Phaser game scenes.                        | 
+## ✨ Features
 
-## Handling Assets
+### 🔐 Zero-Knowledge Proofs
+- **Move Validation**: Every move generates a ZK proof
+- **Hidden Information**: Map remains secret while proving moves are valid
+- **Cryptographic Security**: Uses Groth16 proving system via SnarkJS
+- **Optimistic Bundling**: Gas-efficient batch proof submission
 
-Vite supports loading assets via JavaScript module `import` statements.
+### 🎮 Core Gameplay
+- **Hexagonal Grid**: Navigate a procedurally generated map
+- **Strategic Cards**: 5 unique power-up cards
+  - 🚪 **RAM Break**: Bypass walls instantly
+  - 📡 **Sonar Ping**: Reveal hidden tiles  
+  - 🔒 **Block Cage**: Lock opponent's doors
+  - ⏭️ **Skip Turn**: Disable opponent's next move
+  - 💥 **Ink Blast**: Reduce opponent's visibility
 
-This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
+### 💰 Token Economy
+- **GKH Coin (ERC-20)**: In-game currency
+- **ETH Bridge**: Deposit ETH to mint GKH tokens
+- **Token Burn**: Redeem GKH back to ETH
+- **Card Market**: Purchase strategic cards with GKH
 
-```js
-import logoImg from './assets/logo.png'
+### 🏆 NFT Rewards
+- **Winner's Badge**: Dynamic ERC-721 NFT for victors
+- **On-Chain Proof**: Victory certified by smart contract
+- **Collectible**: Unique metadata per match
+
+### 🌐 Real-Time Multiplayer
+- **WebSocket Communication**: Instant game updates
+- **Matchmaking System**: Auto-pair with opponents
+- **Reconnection Support**: Resume games after disconnect
+- **Turn-Based Strategy**: Fair, provably valid moves
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+```
+React 19.2.0          - UI Framework
+Phaser 3.90.0         - Game Engine
+Vite 7.2.4            - Build Tool
+TailwindCSS 3.4.18    - Styling
+RainbowKit 2.2.10     - Wallet Integration
+Wagmi 2.19.5          - Ethereum Hooks
 ```
 
-To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
+### Backend
+```
+Node.js + Express 5.2.1  - API Server
+WebSocket (ws 8.19.0)    - Real-time Communication
+MongoDB                  - Database
+JWT                      - Authentication
+bcrypt                   - hash+salt
+```
 
-```js
-preload ()
-{
-    //  This is an example of an imported bundled image.
-    //  Remember to import it at the top of this file
-    this.load.image('logo', logoImg);
+### Blockchain
+```
+Solidity ^0.8.18      - Smart Contracts
+Foundry               - Contract Development
+Sepolia Testnet       - Deployment Network
+OpenZeppelin          - Contract Libraries
+```
 
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
+### Zero-Knowledge
+```
+Circom 2.0.0          - Circuit Language
+SnarkJS 0.7.6         - Proof Generation
+Groth16               - Proving System
+Poseidon Hash         - Cryptographic Hashing
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      GHEE KHATAM SYSTEM                      │
+└─────────────────────────────────────────────────────────────┘
+
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│   React Frontend │────▶│  Express Backend │────▶│ MongoDB Database │
+│  (Phaser Game)   │◀────│  (WebSocket API) │◀────│  (Game State)    │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
+         │                        │
+         │                        │
+         ▼                        ▼
+┌──────────────────┐     ┌──────────────────┐
+│  Wallet (Wagmi)  │     │  ZK Proof Gen    │
+│  RainbowKit UI   │     │  (SnarkJS)       │
+└──────────────────┘     └──────────────────┘
+         │                        │
+         └────────┬───────────────┘
+                  │
+                  ▼
+         ┌──────────────────┐
+         │ Sepolia Testnet  │
+         │  Smart Contracts │
+         │ • GKH Token      │
+         │ • Game Ledger    │
+         │ • NFT Minter     │
+         └──────────────────┘
+```
+
+### Data Flow: Move Validation
+
+```
+1. Player clicks hex tile
+   └─▶ 2. Frontend calculates ZK circuit inputs
+       └─▶ 3. SnarkJS generates proof (~100ms)
+           └─▶ 4. Send move + proof to backend
+               └─▶ 5. Backend validates proof
+                   └─▶ 6. Update game state
+                       └─▶ 7. Broadcast to both players
+                           └─▶ 8. (End of match) Submit bundle to blockchain
+```
+
+---
+
+## 🎲 Game Mechanics
+
+### Map Generation
+- **4x5 Hexagonal Grid**: Each tile has 6 potential doors
+- **Random Doors**: 75% chance each door is open
+- **Hidden Treasure**: Random winning tile (not revealed)
+- **Cryptographic Commitment**: Map hash published at game start
+
+### Turn System
+1. **Move Phase**: Select adjacent tile
+2. **Proof Generation**: Client creates ZK proof
+3. **Validation**: Server verifies move is legal
+4. **Update**: Position broadcast to both players
+5. **Win Condition**: First to reach treasure tile
+
+### ZK Circuit Logic
+```circom
+// Simplified RAM Move Circuit
+template RamMove(rows, cols) {
+    // PUBLIC: Visible to everyone
+    signal input oldX, oldY, newX, newY;
+    signal input mapHash;
+    signal input ramActive;
+    
+    // PRIVATE: Only known to server
+    signal input mapGrid[rows][cols];
+    signal input salt;
+    
+    // Verify map integrity
+    mapHash === hash(mapGrid, salt);
+    
+    // Verify move is 1 tile away
+    (newX - oldX)² + (newY - oldY)² === 1;
+    
+    // Verify wall logic
+    wallAtDest * (1 - ramActive) === 0;
 }
 ```
 
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
+---
 
-## Deploying to Production
+## 📜 Smart Contracts
 
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
+### 1️⃣ GKH Token (ERC-20)
+```solidity
+function deposit() payable        // Mint GKH with ETH
+function burnTokens(uint256)      // Burn GKH for ETH
+EXCHANGE_RATE = 10000            // 1 ETH = 10,000 GKH
+```
 
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
+### 2️⃣ Game Ledger
+```solidity
+function deposit(gameId, amount)     // Escrow tokens
+function declareWinner(gameId, addr) // on-chain
+function withdraw(gameId)            // Winner claims pot
+```
 
-## Customizing the Template
+### 3️⃣ NFT Minter (ERC-721)
+```solidity
 
-### Vite
+function mintNft()   // Mint victory NFT
+```
 
-If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
+---
 
-## About log.js
+## 🚀 Getting Started
 
-If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
+### Prerequisites
+```bash
+Node.js >= 18.0.0
+MongoDB
+MetaMask or compatible wallet
+Sepolia ETH (from faucet)
+```
 
-We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
-
-At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
-
-Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
-
-However, if you don't want to send any data, you can use these commands instead:
-
-Dev:
+### Installation
 
 ```bash
-npm run dev-nolog
+# Clone repository
+git clone <repository-url>
+cd ghee-khatam
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your MongoDB URI and secrets
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+
+# Install Phaser game dependencies
+cd ../game-game
+npm install
 ```
 
-Build:
+### Running Locally
 
 ```bash
-npm run build-nolog
+# Terminal 1: Start MongoDB
+mongod
+
+# Terminal 2: Start Backend
+cd backend
+npm run dev
+# Server runs on http://localhost:8000
+
+# Terminal 3: Start Game Server
+cd game-game
+node server.js
+# WebSocket server on ws://localhost:8080
+
+# Terminal 4: Start Frontend
+cd frontend
+npm run dev
+# React app on http://localhost:5173
 ```
 
-Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+### Compile ZK Circuits (Optional)
 
-Before:
-
-```json
-"scripts": {
-    "dev": "node log.js dev & dev-template-script",
-    "build": "node log.js build & build-template-script"
-},
+```bash
+cd backend/zk
+chmod +x scripts/compile.sh
+./scripts/compile.sh
 ```
 
-After:
+---
 
-```json
-"scripts": {
-    "dev": "dev-template-script",
-    "build": "build-template-script"
-},
+## 🧪 Testing
+
+```bash
+# Test smart contracts
+cd foundry
+forge test
+
+# Test ZK circuits
+cd backend
+node test_integration.js
+
+# Run backend tests
+cd backend
+npm test
 ```
 
-Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
+---
 
-## Join the Phaser Community!
+## 🗺️ Roadmap
 
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
+- [x] Core game mechanics
+- [x] ZK proof generation
+- [x] Token economy
+- [x] NFT rewards
+- [ ] Proof verification on-chain
+- [ ] Mobile app (React Native)
+- [ ] Tournament mode
+- [ ] Leaderboards
+- [ ] Mainnet deployment
 
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
+---
 
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
+## 👥 Team
 
-The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/TathagatGupta98">
+        <img src="https://github.com/TathagatGupta98.png" width="100px;" alt=""/>
+        <br /><sub><b>TathagatGupta98</b></sub>
+      </a>
+      <br />ZK Circuits & Smart Contracts
+    </td>
+    <td align="center">
+      <a href="https://github.com/Ibrahim2750mi">
+        <img src="https://github.com/Ibrahim2750mi.png" width="100px;" alt=""/>
+        <br /><sub><b>Ibrahim2750mi</b></sub>
+      </a>
+      <br />Backend & Game Logic
+    </td>
+    <td align="center">
+      <a href="https://github.com/justwasif">
+        <img src="https://github.com/justwasif.png" width="100px;" alt=""/>
+        <br /><sub><b>justwasif</b></sub>
+      </a>
+      <br />Frontend & Blockchain Integration
+    </td>
+  </tr>
+</table>
 
-All rights reserved.
+---
+
+## 🏆 Acknowledgments
+
+Built for **StackTooDeep v3.0** hackathon organized by:
+
+<div align="center">
+
+**Blockchain Society**  
+**IIT Roorkee**
+
+</div>
+
+### Technologies Used
+- [Phaser](https://phaser.io/) - Game engine
+- [SnarkJS](https://github.com/iden3/snarkjs) - ZK proof library
+- [Circom](https://docs.circom.io/) - Circuit compiler
+- [OpenZeppelin](https://www.openzeppelin.com/) - Smart contract libraries
+- [RainbowKit](https://www.rainbowkit.com/) - Wallet connection UI
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Links
+- **Documentation**: [Coming Soon]
+- **Video Demo**: [Coming Soon]
+
+---
+
+<div align="center">
+
+**Made with ❤️ for StackTooDeep v3.0**
+
+*Trust is mathematical, not assumed.*
+
+</div>
