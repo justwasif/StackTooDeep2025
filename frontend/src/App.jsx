@@ -14,7 +14,7 @@ import Bridge from './pages/Bridge.jsx';
 import Header from './component/Header';
 import CardMarket from './pages/CardMarket';
 import Nft_mint from './pages/Nft_mint.jsx';
-// import NPCChat from './component/NPCChat.jsx';
+import Looser from "./pages/Looser.jsx";
 
 import './App.css';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -49,7 +49,7 @@ function App() {
               
               <Route path="/game" element={<Game />} />
               <Route path='/nftMint' element={<Nft_mint/>}/>
-              {/* <Route path='/npc' element={<NPCChat/>}/> */}
+              <Route path='/looser' element={<Looser/>}/>
               
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" />} />
