@@ -19,7 +19,7 @@ contract TwoPlayerGameLedger is ReentrancyGuard {
         require(msg.sender == admin, "Not admin");
         _;
     }
-
+    
     struct Game {
         address player1;
         address player2;

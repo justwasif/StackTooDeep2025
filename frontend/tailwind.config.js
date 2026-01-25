@@ -1,11 +1,22 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+module.exports = {
+  content: ["./src/**/*.{html,js,jsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'funky': ['DinoWorld', 'cursive'],
+      },
+      colors: {
+        brand: {
+          pink: '#FF7396',
+          yellow: '#FCCB30',
+          orange: '#FF8048',
+          purple: '#C980DB',
+          teal: '#00BEAE',
+          blue: '#00AFC7',
+        }
+      }
+    },
   },
   plugins: [],
 }
