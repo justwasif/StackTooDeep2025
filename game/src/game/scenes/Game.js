@@ -1,10 +1,14 @@
 import { Scene } from 'phaser';
+import { generateMoveProof } from '../utils/zkProver.js';
 
 const HEIGHT_WIDTH_RATIO = Math.sqrt(2);
-const HEX_WIDTH_RATIO = 0.29;
-const TILE_SIZE = 175;
+const HEX_WIDTH_RATIO = 1;
+const TILE_SIZE = 100;
 const HEX_WIDTH = TILE_SIZE * HEX_WIDTH_RATIO * HEIGHT_WIDTH_RATIO;
 const HEX_HEIGHT = TILE_SIZE * HEX_WIDTH_RATIO;
+const PLAYER_INDEX = 2;
+const OPPONENT_INDEX = 7;
+const Y_INDEX = 4;
 
 export class Game extends Scene {
     player;
@@ -17,6 +21,11 @@ export class Game extends Scene {
     opponentUsername;
     statusText;
     active_tile;
+    winning_tile;
+    previousTile;
+    activeCard = null;
+    canRamDoor = false;
+    usedCards = new Set();
 
     constructor() {
         super('Game');
@@ -24,43 +33,54 @@ export class Game extends Scene {
 
     create() {
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.cameras.main.setBackgroundColor(0x00ff00);
 
-        this.add.image(512, 384, 'background').setAlpha(0.5);
+        // Get WebSocket from global reference
+        this.ws = window.gameWebSocket;
+        this.matchId = window.currentMatchId;
+
+        this.add.image(512, 384, 'background');
         this.add.image(512, 698, "cardPanel");
-
-        // Create status text at the top
-        this.statusText = this.add.text(512, 30, 'Connecting to game...', {
-            fontFamily: 'Arial',
-            fontSize: 24,
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 4,
-            align: 'center'
-        }).setOrigin(0.5);
 
         this.mapRNG = new Phaser.Math.RandomDataGenerator(["12345"]);
 
         // Create tile map
         const tile_map = this.physics.add.group();
-        let playerX = 0;
-        let playerY = 0;
+        let playerX, playerY, opponentX, opponentY;
+        if (this.playerNumber === 1){
+            this.playerIndex = PLAYER_INDEX;
+            this.opponentIndex = OPPONENT_INDEX;
+        } else {
+            this.playerIndex = OPPONENT_INDEX;
+            this.opponentIndex = PLAYER_INDEX;
+        }
 
-        for (let i = 1; i < 19; i++) {
-            for (let j = 1; j < 12; j++) {
+        const allTiles = [];
+
+        this.mapCommitment = [];
+        for (let i = 2; i < 8; i++) {
+            let mapRow =[];
+            for (let j = 1; j < 5; j++) {
                 const x = i * (HEX_WIDTH * 0.75);
                 const y = j * HEX_HEIGHT + (i % 2) * (HEX_HEIGHT / 2) + 14;
                 const tile = tile_map.create(x, y, 'tile');
                 tile.door_list = [];
+                tile.gridX = i;
+                tile.gridY = j;
 
                 for (let door_i = 0; door_i < 6; door_i++) {
-                    tile.door_list.push(this.mapRNG.integerInRange(0, 2) === 0 ? 0 : 1);
+                    tile.door_list.push(this.mapRNG.integerInRange(0, 3) === 0 ? 0 : 1);
                 }
-
-                if (i === 6 && j === 7) {
+                mapRow.push(tile.door_list);
+                if (i === this.playerIndex && j === Y_INDEX) {
                     playerX = x;
                     playerY = y;
                     this.active_tile = tile;
+                    this.previousTile = tile;
+                }
+
+                if (i === this.opponentIndex && j === Y_INDEX) {
+                    opponentX = x;
+                    opponentY = y;
                 }
 
                 tile
@@ -68,17 +88,25 @@ export class Game extends Scene {
                     .setDisplaySize(TILE_SIZE * HEIGHT_WIDTH_RATIO, TILE_SIZE)
                     .refreshBody()
                     .setInteractive({ useHandCursor: true });
+
+                allTiles.push(tile);
             }
+            this.mapCommitment.push(mapRow);
         }
 
+        // Select random winning tile (not starting positions)
+        const validTiles = allTiles.filter(tile =>
+            !(tile.gridX === this.playerIndex && tile.gridY === Y_INDEX) &&
+            !(tile.gridX === this.opponentIndex && tile.gridY === Y_INDEX)
+        );
+        this.winning_tile = Phaser.Utils.Array.GetRandom(validTiles);
+        console.log('Winning tile position:', this.winning_tile.gridX, this.winning_tile.gridY);
+
         // Create both players
-        // this.player = this.physics.add.sprite(playerX, playerY, 'player');
-        // this.opponent = this.physics.add.sprite(900, 450, 'player');
-        // this.opponent.setTint(0xff0000); // Red for opponent
-        // this.opponent.setVisible(false); // Hide until game starts
-
-
-
+        console.log(playerX, playerY, opponentX, opponentY);
+        this.player = this.physics.add.sprite(playerX, playerY, 'player');
+        this.opponent = this.physics.add.sprite(opponentX, opponentY, 'player');
+        this.opponent.setTint(0xff0000);
 
         // Setup tile click handlers
         tile_map.children.iterate(tile => {
@@ -87,46 +115,29 @@ export class Game extends Scene {
             })
         });
 
-        // Create animations
-        this.anims.create({
-            key: 'doorClose',
-            frameRate: 5,
-            repeat: 3,
-            frames: this.anims.generateFrameNames('tile', {start: 1, end: 4}),
-        });
-
-        this.anims.create({
-            key: 'doorOpen',
-            frameRate: 5,
-            repeat: 3,
-            frames: this.anims.generateFrameNames('tile', {start: 5, end: 8}),
-        });
-
-        // Get WebSocket from global reference
-        this.ws = window.gameWebSocket;
-        this.matchId = window.currentMatchId;
-
         this.buttons = this.add.container();
         this.isCardAnimating = false;
+        this.sfxCard = this.sound.add("cardSound", {volume: 1});
 
         for (let i = 1; i < 6; i++) {
             const btn = this.add.image(-42 + i*100, 698, "card-" + i.toString())
                 .setInteractive({ useHandCursor: true })
                 .setScrollFactor(0)
-                .setDepth(1);
+                .setDepth(1)
+                .setScale(1);
 
             btn.cardNumber = i;
             btn.originalX = -42 + i*100;
             btn.originalY = 698;
 
             btn.on('pointerover', () => {
-                if (!this.isCardAnimating) btn.setAlpha(0.8);
+                if (!this.isCardAnimating && !this.usedCards.has(i)) btn.setAlpha(0.8);
             });
             btn.on('pointerout', () => {
-                if (!this.isCardAnimating) btn.setAlpha(1);
+                if (!this.isCardAnimating && !this.usedCards.has(i)) btn.setAlpha(1);
             });
             btn.on('pointerdown', () => {
-                if (!this.isCardAnimating) {
+                if (!this.isCardAnimating && !this.usedCards.has(i) && this.currentTurn === this.playerNumber) {
                     this.playCardAnimation(btn);
                 }
             });
@@ -135,10 +146,29 @@ export class Game extends Scene {
         }
 
         this.createShaders();
+
+        // Card instruction text
+        this.cardInstructionText = this.add.text(512, 650, '', {
+            fontFamily: 'Arial',
+            fontSize: 18,
+            color: '#ffff00',
+            stroke: '#000000',
+            strokeThickness: 3,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(300);
+
+
+        this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+            fontFamily: 'Arial',
+            fontSize: 24,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(300);
     }
 
     createShaders() {
-        // Red pulsing shader for door blocked
         const doorBlockShaderCode = `
 precision mediump float;
 
@@ -164,7 +194,6 @@ void main(void) {
 }
         `;
 
-        // Green magical particles shader for door open
         const doorOpenShaderCode = `
 precision mediump float;
 
@@ -218,6 +247,7 @@ void main(void) {
 
     playCardAnimation(card) {
         this.isCardAnimating = true;
+        this.sfxCard.play();
         card.setDepth(200);
 
         const centerX = 512;
@@ -247,7 +277,7 @@ void main(void) {
                         onComplete: () => {
                             card.setDepth(1);
                             this.isCardAnimating = false;
-                            console.log(`Card ${card.cardNumber} was used`);
+                            this.activateCard(card.cardNumber);
                         }
                     });
                 });
@@ -255,9 +285,144 @@ void main(void) {
         });
     }
 
-    onTileClick(tile, pointer) {
-        const centerX = tile.x - HEX_WIDTH * HEIGHT_WIDTH_RATIO;
-        const centerY = tile.y - HEX_HEIGHT;
+    activateCard(cardNumber) {
+        console.log(`Card ${cardNumber} was used`);
+        this.activeCard = cardNumber;
+        this.usedCards.add(cardNumber);
+
+        // Mark card as used visually
+        this.buttons.list.forEach(btn => {
+            if (btn.cardNumber === cardNumber) {
+                btn.setTint(0x666666);
+                btn.setAlpha(0.5);
+            }
+        });
+
+        switch(cardNumber) {
+            case 1: // Skip opponent's turn
+                this.cardInstructionText.setText('Opponent\'s next turn will be skipped!');
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({
+                        type: 'skipTurn',
+                        matchId: this.matchId
+                    }));
+                }
+                this.time.delayedCall(2000, () => {
+                    this.cardInstructionText.setText('');
+                    this.activeCard = null;
+                });
+                break;
+
+            case 2: // Ram through doors
+                this.canRamDoor = true;
+                this.cardInstructionText.setText('You can now move through closed doors! Make your move.');
+                this.time.delayedCall(3000, () => {
+                    if (this.canRamDoor) {
+                        this.cardInstructionText.setText('');
+                    }
+                });
+                break;
+
+            case 3: // Block doors on any tile
+                this.cardInstructionText.setText('Click on any tile to block 80% of its doors');
+                // Will handle in onTileClick
+                break;
+
+            case 4: // Hot/Cold indicator
+                this.checkHotCold();
+                this.time.delayedCall(3000, () => {
+                    this.cardInstructionText.setText('');
+                    this.activeCard = null;
+                });
+                break;
+
+            case 5: // Debug card
+                console.log('Card 5 activated - Debug Info:');
+                console.log('Current position:', this.active_tile.gridX, this.active_tile.gridY);
+                console.log('Winning tile:', this.winning_tile.gridX, this.winning_tile.gridY);
+                console.log('Distance to winning tile:', this.getDistance(this.active_tile, this.winning_tile));
+                this.cardInstructionText.setText('Debug info logged to console');
+                this.time.delayedCall(2000, () => {
+                    this.cardInstructionText.setText('');
+                    this.activeCard = null;
+                });
+                break;
+        }
+    }
+
+    getDistance(tile1, tile2) {
+        return Math.sqrt(
+            Math.pow(tile1.x - tile2.x, 2) +
+            Math.pow(tile1.y - tile2.y, 2)
+        );
+    }
+
+    checkHotCold() {
+        const currentDist = this.getDistance(this.active_tile, this.winning_tile);
+        const previousDist = this.getDistance(this.previousTile, this.winning_tile);
+
+        if (currentDist < previousDist) {
+            this.cardInstructionText.setText('🔥 HOTTER! You\'re getting closer!');
+            this.cardInstructionText.setColor('#ff4400');
+        } else if (currentDist > previousDist) {
+            this.cardInstructionText.setText('❄️ COLDER! You\'re moving away!');
+            this.cardInstructionText.setColor('#4488ff');
+        } else {
+            this.cardInstructionText.setText('Same distance as before');
+            this.cardInstructionText.setColor('#ffff00');
+        }
+
+        this.time.delayedCall(100, () => {
+            this.cardInstructionText.setColor('#ffff00');
+        });
+    }
+
+    async onTileClick(tile, pointer) {
+        if (!this.player || this.currentTurn !== this.playerNumber) {
+            console.log(this.player, this.playerNumber, this.currentTurn);
+            return;
+        }
+        const centerX = tile.x;
+        const centerY = tile.y;
+        // Card 3: Block doors on selected tile
+        if (this.activeCard === 3) {
+            const doorsToBlock = Math.floor(tile.door_list.length * 0.8);
+            const indices = [0, 1, 2, 3, 4, 5];
+            Phaser.Utils.Array.Shuffle(indices);
+
+            for (let i = 0; i < doorsToBlock; i++) {
+                tile.door_list[indices[i]] = 0;
+            }
+
+            this.cardInstructionText.setText('Doors blocked!');
+
+            // Visual feedback
+            const flash = this.add.circle(centerX, centerY, HEX_WIDTH / 2, 0xff0000, 0.3);
+            this.tweens.add({
+                targets: flash,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => flash.destroy()
+            });
+
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    type: 'blockDoors',
+                    tileX: tile.gridX,
+                    tileY: tile.gridY,
+                    doorList: tile.door_list,
+                    matchId: this.matchId
+                }));
+            }
+
+            this.time.delayedCall(2000, () => {
+                this.cardInstructionText.setText('');
+                this.activeCard = null;
+            });
+            return;
+        }
+
+        // Normal movement logic
         const vector = new Phaser.Math.Vector2(
             centerX - this.player.x,
             centerY - this.player.y
@@ -273,32 +438,114 @@ void main(void) {
         } else {
             index = direction.y < 6 ? 5 : 4;
         }
-
+        console.log(distance, HEX_WIDTH * 0.8666);
         if (distance < HEX_WIDTH * Math.sqrt(3) / 2) {
             const door_state = this.active_tile.door_list[index];
 
-            if (door_state === 0) {
-                this.active_tile.anims.play("doorClose");
+            if (door_state === 0 && !this.canRamDoor) {
                 console.log("Door is closed");
                 this.showDoorBlockEffect();
             } else {
-                this.active_tile.anims.play("doorOpen");
-                console.log("Door is open");
-                this.showDoorOpenEffect(pointer);
+                if (this.canRamDoor && door_state === 0) {
+                    console.log("Ramming through closed door!");
+                    this.canRamDoor = false;
+                    this.cardInstructionText.setText('');
+                    this.activeCard = null;
+                } else {
+                    console.log("Door is open");
+                }
 
+                this.showDoorOpenEffect(pointer);
+                this.previousTile = this.active_tile;
                 this.active_tile = tile;
+
+                const oldX = Math.floor(this.player.x);
+                const oldY = Math.floor(this.player.y);
+                const newX = Math.floor(centerX);
+                const newY = Math.floor(centerY);
+
+                // Show loading state
+                if (this.statusText) {
+                    this.statusText.setText('🔐 Generating proof...');
+                }
+
+                // Check if we have map commitment
+                if (!this.mapCommitment) {
+                    throw new Error('Map commitment not received from server');
+                }
+
+                // Prepare circuit inputs
+                const zkInput = {
+                    oldX: oldX,
+                    oldY: oldY,
+                    newX: newX,
+                    newY: newY,
+                    mapHash: this.mapCommitment.map_hash,
+                    ramActive: 0, // TODO: Check if RAM card is active
+                    mapGrid: this.mapCommitment.grid_layout,
+                    salt: this.mapCommitment.map_salt
+                };
+
+                console.log('🔐 Starting proof generation...');
+
+                // Generate the proof (this takes ~100-500ms)
+                const {proof, publicSignals} = await generateMoveProof(zkInput);
+
+                console.log('✅ Proof generated successfully!');
+
+                // Update UI
+                if (this.statusText) {
+                    this.statusText.setText(
+                        this.currentTurn === this.playerNumber ? 'YOUR TURN' : 'OPPONENT\'S TURN'
+                    );
+                }
+
+                // Update local position
                 this.player.setPosition(centerX, centerY);
 
-                // Send move to server if WebSocket is connected
+                // Send move with proof to server
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                     this.ws.send(JSON.stringify({
                         type: 'move',
-                        x: centerX,
-                        y: centerY,
-                        matchId: this.matchId
+                        x: newX,
+                        y: newY,
+                        matchId: this.matchId,
+                        proof: proof,
+                        publicSignals: publicSignals
                     }));
+
+                    this.player.setPosition(centerX, centerY);
+
+                    // Check if player reached winning tile
+                    console.log(tile.x, tile.y, this.winning_tile.x, this.winning_tile.y);
+                    if (tile === this.winning_tile) {
+                        this.handleWin();
+                    }
+
+                    // Send move to server
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({
+                            type: 'move',
+                            x: centerX,
+                            y: centerY,
+                            matchId: this.matchId
+                        }));
+                    }
                 }
             }
+        }
+    }
+
+    handleWin() {
+        this.statusText.setText('🎉 YOU REACHED THE WINNING TILE! 🎉');
+        this.statusText.setFontSize(32);
+        this.statusText.setColor('#00ff00');
+
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({
+                type: 'win',
+                matchId: this.matchId
+            }));
         }
     }
 
@@ -344,43 +591,23 @@ void main(void) {
         switch(data.type) {
             case 'authenticated':
                 console.log('Game authenticated');
-                this.statusText.setText('Waiting for opponent...');
                 break;
 
             case 'waiting':
-                this.statusText.setText('Waiting for opponent...');
                 break;
 
             case 'gameStart':
+                // this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+                //     fontFamily: 'Arial',
+                //     fontSize: 24,
+                //     color: '#ffffff',
+                //     stroke: '#000000',
+                //     strokeThickness: 4,
+                //     align: 'center'
+                // }).setOrigin(0.5).setDepth(300);
                 this.playerNumber = data.playerNumber;
                 this.currentTurn = data.currentTurn;
                 this.opponentUsername = data.opponentUsername;
-
-                const { player1Position, player2Position } = data.gameState;
-
-                // 🔥 CREATE BOTH SPRITES FROM SERVER STATE
-                const p1 = this.physics.add.sprite(
-                    player1Position.x,
-                    player1Position.y,
-                    'player'
-                );
-
-                const p2 = this.physics.add.sprite(
-                    player2Position.x,
-                    player2Position.y,
-                    'player'
-                );
-
-                p2.setTint(0xff0000);
-
-                // 🔥 ASSIGN "ME" AND "OPPONENT"
-                if (this.playerNumber === 1) {
-                    this.player = p1;
-                    this.opponent = p2;
-                } else {
-                    this.player = p2;
-                    this.opponent = p1;
-                }
 
                 this.updateTurnDisplay();
 
@@ -390,13 +617,25 @@ void main(void) {
                 );
                 break;
 
-
-
-
             case 'gameUpdate':
                 this.updateGameState(data.gameState);
                 this.currentTurn = data.currentTurn;
                 this.updateTurnDisplay();
+                break;
+
+            case 'turnSkipped':
+                this.statusText.setText('Your turn was skipped by opponent!');
+                this.statusText.setColor('#ff0000');
+                this.time.delayedCall(2000, () => {
+                    this.updateTurnDisplay();
+                });
+                break;
+
+            case 'doorsBlocked':
+                // Update door state for the blocked tile
+                if (data.tileX && data.tileY && data.doorList) {
+                    this.updateTileDoors(data.tileX, data.tileY, data.doorList);
+                }
                 break;
 
             case 'gameEnd':
@@ -404,7 +643,14 @@ void main(void) {
                 break;
 
             case 'opponentDisconnected':
-                this.statusText.setText('Opponent disconnected. You win!');
+                // this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+                //     fontFamily: 'Arial',
+                //     fontSize: 24,
+                //     color: '#ffffff',
+                //     stroke: '#000000',
+                //     strokeThickness: 4,
+                //     align: 'center'
+                // }).setOrigin(0.5).setDepth(300);
                 this.statusText.setColor('#00ff00');
                 break;
 
@@ -413,6 +659,16 @@ void main(void) {
                 this.statusText.setText(`Error: ${data.message}`);
                 break;
         }
+    }
+
+    updateTileDoors(gridX, gridY, doorList) {
+        // Find the tile and update its doors
+        this.children.list.forEach(child => {
+            if (child.gridX === gridX && child.gridY === gridY) {
+                child.door_list = doorList;
+                console.log(`Updated doors for tile (${gridX}, ${gridY})`);
+            }
+        });
     }
 
     updateGameState(gameState) {
@@ -465,15 +721,18 @@ void main(void) {
 
         this.statusText.setText(message);
         this.statusText.setFontSize(32);
-
-        // Return to dashboard after 5 seconds
-        this.time.delayedCall(5000, () => {
-            window.location.href = 'http://localhost:5173/dashboard';
-        });
+        if (data.isWinner) {
+            this.time.delayedCall(5000, () => {
+                window.location.href = 'http://localhost:5173/nftMint';
+            });
+        } else {
+            this.time.delayedCall(5000, () => {
+                window.location.href = 'http://localhost:5173/nftMint';
+            });
+        }
     }
 
     shutdown() {
-        // Clean up WebSocket connection when scene closes
         if (this.ws) {
             this.ws.close();
         }
