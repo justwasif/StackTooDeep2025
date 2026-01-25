@@ -395,7 +395,7 @@ const TSC_CONTRACT_ABI=[
             "inputs": []
         }
     ];
-const TSC_CONTRACT_ADDRESS="0x7418D8BaB84ADa7b59813B80A61959734E2699b5";
+const TSC_CONTRACT_ADDRESS="0x7f39aa73C205702AA7D9712D3c667Bc117D3c6a4";
 
 const GAME_LEDGER_ADDRESS="0xA697A2E6E84522175200951b951fd2cE1e02113F";
 
@@ -413,91 +413,36 @@ const GAME_LEDGER_ABI=[
         },
         {
             "type": "function",
-            "name": "admin",
+            "name": "ENTRY_FEE",
             "inputs": [],
             "outputs": [
                 {
                     "name": "",
-                    "type": "address",
-                    "internalType": "address"
+                    "type": "uint256",
+                    "internalType": "uint256"
                 }
             ],
             "stateMutability": "view"
         },
         {
             "type": "function",
-            "name": "declareWinner",
-            "inputs": [
-                {
-                    "name": "gameId",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                },
-                {
-                    "name": "winner",
-                    "type": "address",
-                    "internalType": "address"
-                }
-            ],
-            "outputs": [],
-            "stateMutability": "nonpayable"
-        },
-        {
-            "type": "function",
-            "name": "deposit",
-            "inputs": [
-                {
-                    "name": "gameId",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-            ],
-            "outputs": [],
-            "stateMutability": "nonpayable"
-        },
-        {
-            "type": "function",
-            "name": "games",
-            "inputs": [
+            "name": "WIN_PRIZE",
+            "inputs": [],
+            "outputs": [
                 {
                     "name": "",
                     "type": "uint256",
                     "internalType": "uint256"
                 }
             ],
-            "outputs": [
-                {
-                    "name": "player1",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "player2",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "pot",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                },
-                {
-                    "name": "winner",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "finished",
-                    "type": "bool",
-                    "internalType": "bool"
-                }
-            ],
             "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "deposit",
+            "inputs": [],
+            "outputs": [],
+            "stateMutability": "nonpayable"
         },
         {
             "type": "function",
@@ -515,20 +460,9 @@ const GAME_LEDGER_ABI=[
         {
             "type": "function",
             "name": "withdraw",
-            "inputs": [
-                {
-                    "name": "gameId",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-            ],
+            "inputs": [],
             "outputs": [],
             "stateMutability": "nonpayable"
-        },
-        {
-            "type": "error",
-            "name": "ReentrancyGuardReentrantCall",
-            "inputs": []
         },
         {
             "type": "error",

@@ -132,15 +132,35 @@ export default function CardMarket() {
         try {
             if (selectedCards.length === 0) return alert("Select at least one card.");
 
-            const amount = parseUnits(totalCost.toString(), 18);
+            if (!isConnected) {
+              return alert("Please connect your wallet first.");
+            }
 
-            console.log(`Processing buy for Game: ${gameId}`);
+            const numericString = gameId?.replace(/\D/g, "");
+    
+              // Fallback to 0 if the string is empty or null after processing
+              const cleanGameId = numericString && numericString.length > 0 
+                ? BigInt(numericString) 
+                : BigUint64Array; // Or 0n
 
+              const amount = parseUnits(totalCost.toString(), 18);
+
+              console.log(`Sending to Contract: ID=${cleanGameId}, Amount=${amount}`);
+
+              // 2. Execute Contract Call
+              // We MUST await this so navigation doesn't trigger before the wallet opens
+              await writeContractAsync({
+                address: "0x23D18f6fdd0cE26bCCa09E493B9326049dD83648",
+                abi: GAME_LEDGER_ABI,
+                functionName: "deposit"
+              });
+
+            // Close WebSocket before navigating
             wsRef.current.send(JSON.stringify({
                 type: "startGame",
                 matchId: gameId,
                 selectedCards: selectedCards.map(c => c.id),
-                txHash: null,
+                txHash: null, // you can attach tx hash later
             }));
 
             navigate(`/game?matchId=${gameId}`);

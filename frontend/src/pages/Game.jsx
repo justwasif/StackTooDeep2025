@@ -83,7 +83,7 @@ export default function Game() {
 
     const loadPhaser = async () => {
       try {
-        const { default: StartGame } = await import("../../../game-game/src/game/main");
+        const { default: StartGame } = await import("../../../game/src/game/main");
         window.phaserGame = StartGame("game-container");
 
         if (window.wsMessageQueue) {

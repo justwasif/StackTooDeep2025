@@ -66,19 +66,33 @@ const Home = () => {
             </Link>
 
             {/* Card 3: NFT Rewards */}
-            <Link to="/nftMint">
+            
               <div className="p-8 rounded-3xl bg-[#8100c8] border-4 border-[#8100c8] flex flex-col justify-between">
-                <div>
-                  <h3 className="text-3xl font-game mb-2 text-[#f8e692]">Winner NFT</h3>
-                  <p className="text-[#f8e692] text-base">
-                    Win the match to mint a dynamic "Victor's Badge" on-chain.
-                  </p>
-                </div>
-                <div className="mt-6 w-full h-24 bg-[#ff00d6] rounded-xl flex items-center justify-center border-4 border-[#f8e692]">
-                  <span className="font-marker text-[#f8e692] text-sm">ERC-721 MINTABLE</span>
-                </div>
-              </div>
-            </Link>
+  
+  <div>
+    <h3 className="text-3xl font-game mb-2 text-[#f8e692]">Winner NFT</h3>
+    <p className="text-[#f8e692] text-base">
+      Win the match to mint a dynamic "Victor's Badge" on-chain.
+    </p>
+  </div>
+
+        <div className="mt-6 w-full h-24 bg-[#ff00d6] rounded-xl flex items-center justify-center border-4 border-[#f8e692] overflow-hidden gap-3">
+
+          <img
+            src="/image.png"
+            alt="Winner NFT"
+            className="h-full object-contain"
+          />
+
+          <span className="font-marker text-[#f8e692] text-sm whitespace-nowrap">
+            ERC-721 M
+          </span>
+
+        </div>
+
+      </div>
+
+            
 
             {/* Card 4: ZK Bundler (Tech Flex) */}
             <div className="md:col-span-2 p-8 rounded-3xl bg-white border-4 border-[#8100c8] hover:border-[#74aaee] transition-all flex items-center justify-between">

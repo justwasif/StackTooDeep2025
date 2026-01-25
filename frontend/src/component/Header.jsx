@@ -14,11 +14,11 @@ const Header = () => {
 
             {/* Navigation / Actions */}
             <nav className="hidden md:flex items-center gap-8 font-marker text-sm text-[#8100c8]">
-                <a href="#features" className="hover:text-[#ff00d6] transition-colors">ZK-TECH</a>
+                {/* <a href="#features" className="hover:text-[#ff00d6] transition-colors">ZK-TECH</a> */}
                 <Link to="login/bridge">
                     <a href="#economy" className="hover:text-[#ff00d6] transition-colors">TOKENOMICS</a>
                 </Link>
-                <a href="#verify" className="hover:text-[#ff00d6] transition-colors">VERIFY</a>
+                {/* <a href="#verify" className="hover:text-[#ff00d6] transition-colors">VERIFY</a> */}
             </nav>
 
             {/* Wallet Connect */}

@@ -107,6 +107,7 @@ export default function Bridge() {
               <p className="text-xs text-[#8100c8] uppercase tracking-wide font-marker mb-1">Pool Liquidity</p>
               <p className="text-2xl font-bold text-[#8100c8] font-game">
                 {contractEthBalance ? Number(formatEther(contractEthBalance)).toFixed(4) : "0.0000"} <span className="text-sm text-[#8100c8]">ETH</span>
+                con
               </p>
             </div>
           </div>
