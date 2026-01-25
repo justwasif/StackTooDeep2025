@@ -353,7 +353,7 @@ npm test
         <img src="https://github.com/Ibrahim2750mi.png" width="100px;" alt=""/>
         <br /><sub><b>Ibrahim2750mi</b></sub>
       </a>
-      <br />Backend & Game Logic
+      <br />Backend, Game Logic, Assets, Frontend
     </td>
     <td align="center">
       <a href="https://github.com/justwasif">
