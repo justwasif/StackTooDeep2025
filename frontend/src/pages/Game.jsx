@@ -6,11 +6,12 @@ export default function Game() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 🔒 Prevent duplicate WS in StrictMode
     if (wsRef.current) return;
 
     const params = new URLSearchParams(window.location.search);
+    const playerNumber = Number(sessionStorage.getItem("playerNumber"));
     const matchId = params.get("matchId");
+
 
     if (!matchId) {
       setError("No match ID provided");
@@ -20,8 +21,7 @@ export default function Game() {
     const ws = new WebSocket("ws://localhost:8080/ws/game");
     wsRef.current = ws;
 
-    const playerId = localStorage.getItem("playerId");
-    const username = localStorage.getItem("username") || "Player";
+    const username = sessionStorage.getItem("playerId") || "Player";
 
     ws.onopen = () => {
       console.log("✅ WS connected (game)");
@@ -35,7 +35,7 @@ export default function Game() {
       ws.send(JSON.stringify({
         type: "join",
         matchId,
-        playerId
+        playerNumber,
       }));
     };
 
@@ -50,18 +50,15 @@ export default function Game() {
 
       console.log("📨 WS Message:", data);
 
-      // Store matchId globally for Phaser access
       if (data.type === 'gameStart') {
         window.currentMatchId = data.matchId;
       }
 
-      // Forward messages to Phaser scene if it exists
       if (window.phaserGame) {
         const gameScene = window.phaserGame.scene.getScene('Game');
         if (gameScene && gameScene.handleServerMessage) {
           gameScene.handleServerMessage(data);
         } else {
-          // Queue messages if scene isn't ready yet
           if (!window.wsMessageQueue) {
             window.wsMessageQueue = [];
           }
@@ -81,18 +78,14 @@ export default function Game() {
       setConnectionStatus("disconnected");
     };
 
-    // Store WS globally for Phaser access
     window.gameWebSocket = ws;
     window.currentMatchId = matchId;
 
-    // Start Phaser game after WS setup
     const loadPhaser = async () => {
       try {
-        // Dynamically import your Phaser game entry point
-        const { default: StartGame } = await import("../../../game/src/game/main");
+        const { default: StartGame } = await import("../../../game-game/src/game/main");
         window.phaserGame = StartGame("game-container");
 
-        // Process any queued messages
         if (window.wsMessageQueue) {
           setTimeout(() => {
             const gameScene = window.phaserGame?.scene.getScene('Game');
@@ -101,7 +94,7 @@ export default function Game() {
                 gameScene.handleServerMessage(window.wsMessageQueue.shift());
               }
             }
-          }, 1000); // Give Phaser time to initialize
+          }, 1000);
         }
       } catch (err) {
         console.error("Failed to load Phaser game:", err);
@@ -132,13 +125,13 @@ export default function Game() {
 
   if (error) {
     return (
-        <div className="flex items-center justify-center w-screen h-screen bg-gray-900">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-red-500 mb-4">Error</h1>
-            <p className="text-white text-lg">{error}</p>
+        <div className="flex items-center justify-center w-screen h-screen bg-[#f8e692]">
+          <div className="text-center p-8 bg-white border-4 border-[#8100c8] rounded-3xl">
+            <h1 className="text-3xl font-bold text-[#ff00d6] mb-4">Error</h1>
+            <p className="text-[#8100c8] text-lg">{error}</p>
             <button
                 onClick={() => window.location.href = '/dashboard'}
-                className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="mt-6 px-6 py-3 bg-[#74aaee] text-[#8100c8] border-4 border-[#8100c8] rounded-lg hover:bg-[#8100c8] hover:text-[#f8e692] transition font-bold"
             >
               Return to Dashboard
             </button>
@@ -148,17 +141,17 @@ export default function Game() {
   }
 
   return (
-      <div className="relative w-screen h-screen bg-black">
+      <div className="relative w-screen h-screen bg-[#f8e692]">
         {connectionStatus !== "connected" && (
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white border-4 border-[#8100c8] text-[#8100c8] px-6 py-3 rounded-lg shadow-lg">
               {connectionStatus === "connecting" && (
                   <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-[#8100c8] border-t-transparent rounded-full animate-spin"></div>
                     <span>Connecting to game...</span>
                   </div>
               )}
               {connectionStatus === "disconnected" && (
-                  <span className="text-yellow-400">Disconnected - Attempting to reconnect...</span>
+                  <span className="text-[#ff00d6]">Disconnected - Attempting to reconnect...</span>
               )}
             </div>
         )}

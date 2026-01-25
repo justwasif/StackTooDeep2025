@@ -1,20 +1,21 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./src/**/*.{html,js,jsx}"],
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
-        'funky': ['DinoWorld', 'cursive'],
+        game: ['Bangers', 'cursive'],              // For titles/headers
+        marker: ['Permanent Marker', 'cursive'],   // For buttons/UI
+        brush: ['Caveat Brush', 'cursive'],        // For body text (optional)
       },
       colors: {
-        brand: {
-          pink: '#FF7396',
-          yellow: '#FCCB30',
-          orange: '#FF8048',
-          purple: '#C980DB',
-          teal: '#00BEAE',
-          blue: '#00AFC7',
-        }
+        'neon-blue': '#74aaee',
+        'cyber-purple': '#8100c8',
+        'game-yellow': '#f8e692',
+        'hot-pink': '#ff00d6',
       }
     },
   },

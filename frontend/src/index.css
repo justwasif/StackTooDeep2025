@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    font-family: 'Permanent Marker', cursive;
+  }
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;

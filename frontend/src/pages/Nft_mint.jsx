@@ -2,55 +2,44 @@
 
 import { useState } from "react";
 import { useAccount, useWriteContract } from "wagmi";
-import { NFT_ADDRESS, NFT_ABI ,GAME_LEDGER_ABI} from "../constants";
-
+import { NFT_ADDRESS, NFT_ABI } from "../constants";
 
 const DOG1_URI =
-  "ipfs://Qmdk2b6VUemWYkfcfSVvGxBkRG5GBcxwkWrZeTomRzNTAD";
+    "ipfs://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4/?filename=0-PUG.json";
 
 const DOG2_URI =
-  "ipfs://QmNZydxUGvWBTWPvswcYSyg9HSXPoYDDDbd5E8i8N65LAp";
+    "ipfs://QmNZydxUGvWBTWPvswcYSyg9HSXPoYDDDbd5E8i8N65LAp";
 
 const DOG1_IMG =
-  "https://ipfs.io/ipfs/QmZ6ZJJ3iegQ6CUwnmocCVribFvEChRQNomdsaftHCJkA6";
+    "https://ipfs.io/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png";
 
 const DOG2_IMG =
-  "https://ipfs.io/ipfs/QmPwjq6xjQ4eC32hEdyuiB1Dop5fm833FQxpmUbpsZLjV2";
+    "https://ipfs.io/ipfs/QmPwjq6xjQ4eC32hEdyuiB1Dop5fm833FQxpmUbpsZLjV2";
 
 export default function BasicNft() {
   const { isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
   const [minting, setMinting] = useState(false);
-  const [lastDogImg, setLastDogImg] = useState(null);
 
-  function getRandomDog() {
-    const rand = Math.random() < 0.5;
-    return rand
-      ? { uri: DOG1_URI, img: DOG1_IMG, name: "modiji" }
-      : { uri: DOG2_URI, img: DOG2_IMG, name: "cat" };
-  }
-
-  async function mintRandom() {
+  async function mint(uri) {
     if (!isConnected) {
       alert("Connect wallet first");
       return;
     }
 
-    const dog = getRandomDog();
-
     try {
       setMinting(true);
-      setLastDogImg(dog.img);
 
       const tx = await writeContractAsync({
         address: NFT_ADDRESS,
-        abi: NFT_ABI,
+        abi:NFT_ABI,
         functionName: "mintNft",
-        args: [dog.uri],
+        args: [uri],
       });
 
-      console.log(`Minted ${dog.name}`, tx);
+      console.log("Mint tx:", tx);
+      alert("congo");
     } catch (err) {
       console.error(err);
       alert("Mint failed");
@@ -58,47 +47,44 @@ export default function BasicNft() {
       setMinting(false);
     }
   }
-  async function withdrawPrize() {
-  if (!isConnected) {
-    alert("Connect wallet first");
-    return;
-  }
-
-  try {
-    const tx = await writeContractAsync({
-      address: "0x23D18f6fdd0cE26bCCa09E493B9326049dD83648",
-      abi: GAME_LEDGER_ABI,
-      functionName: "withdraw",
-    });
-
-    console.log("Withdraw success:", tx);
-  } catch (err) {
-    console.error(err);
-    alert("Withdraw failed");
-  }
-  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 rounded-xl p-10 text-center space-y-6">
-        <div className="mx-auto">
-            <img src="Pasted image.png" width={300} height={100}/>
-        </div>
-        <button
-          onClick={mintRandom}
-          disabled={minting}
-          className="px-8 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg text-lg disabled:opacity-50"
-        >
-          {minting ? "Minting Random winning reward ..." : "Mint Random winning reward "}
-        </button>
-        <button
-        onClick={withdrawPrize}
-        className="px-8 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-lg"
-      >
-        Withdraw Prize
-      </button>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8e692] text-[#8100c8]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
+          {/* DOG 1 */}
+          <div className="bg-white border-4 border-[#8100c8] rounded-xl p-6 text-center">
+            <img
+                src={DOG1_IMG}
+                alt="Dog 1"
+                className="w-64 h-64 mx-auto rounded-lg mb-4 border-4 border-[#8100c8]"
+            />
+            <button
+                onClick={() => mint(DOG1_URI)}
+                disabled={minting}
+                className="px-6 py-2 bg-[#74aaee] hover:bg-[#8100c8] hover:text-[#f8e692] border-4 border-[#8100c8] rounded-lg disabled:opacity-50 text-[#8100c8] font-marker text-lg uppercase"
+            >
+              {minting ? "Minting..." : "Mint Dog 1"}
+            </button>
+          </div>
+
+          {/* DOG 2 */}
+          <div className="bg-white border-4 border-[#8100c8] rounded-xl p-6 text-center">
+            <img
+                src={DOG2_IMG}
+                alt="Dog 2"
+                className="w-64 h-64 mx-auto rounded-lg mb-4 border-4 border-[#8100c8]"
+            />
+            <button
+                onClick={() => mint(DOG2_URI)}
+                disabled={minting}
+                className="px-6 py-2 bg-[#ff00d6] hover:bg-[#8100c8] hover:text-[#f8e692] border-4 border-[#8100c8] rounded-lg disabled:opacity-50 text-[#f8e692] font-marker text-lg uppercase"
+            >
+              {minting ? "Minting..." : "Mint Dog 2"}
+            </button>
+          </div>
+
+        </div>
       </div>
-    </div>
   );
 }

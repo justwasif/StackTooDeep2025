@@ -9,7 +9,6 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Matches your backend route: router.post("/register", registerUser);
       await api.post('/users/register', formData);
       alert('Signup successful! Please login.');
       navigate('/login');
@@ -20,37 +19,37 @@ function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold text-center">Sign Up</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            className="w-full p-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          />
-          <button type="submit" className="w-full p-3 bg-blue-600 rounded hover:bg-blue-700 font-bold">
-            Create Account
-          </button>
-        </form>
-        <p className="text-center text-gray-400">
-          Already have an account? <Link to="/login" className="text-blue-400 hover:underline">Login</Link>
-        </p>
+      <div className="flex min-h-screen items-center justify-center bg-[#f8e692] text-[#8100c8]">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white border-4 border-[#8100c8] rounded-lg shadow-lg">
+          <h2 className="text-4xl font-game text-center text-[#8100c8]">Sign Up</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+                type="text"
+                placeholder="Username"
+                className="w-full p-3 bg-[#f8e692] border-2 border-[#8100c8] rounded focus:outline-none focus:border-[#ff00d6] text-[#8100c8] font-marker"
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            />
+            <input
+                type="email"
+                placeholder="Email"
+                className="w-full p-3 bg-[#f8e692] border-2 border-[#8100c8] rounded focus:outline-none focus:border-[#ff00d6] text-[#8100c8] font-marker"
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+            <input
+                type="password"
+                placeholder="Password"
+                className="w-full p-3 bg-[#f8e692] border-2 border-[#8100c8] rounded focus:outline-none focus:border-[#ff00d6] text-[#8100c8] font-marker"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            />
+            <button type="submit" className="w-full p-3 bg-[#74aaee] border-4 border-[#8100c8] rounded hover:bg-[#8100c8] hover:text-[#f8e692] font-marker text-lg text-[#8100c8] uppercase">
+              Create Account
+            </button>
+          </form>
+          <p className="text-center text-[#8100c8] font-marker">
+            Already have an account? <Link to="/login" className="text-[#74aaee] hover:underline">Login</Link>
+          </p>
+        </div>
       </div>
-    </div>
   );
 }
 
