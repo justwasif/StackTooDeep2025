@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Login from './Login';   
 import Signup from './Signup'; 
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   const [showLogin, setShowLogin] = useState(true);
@@ -9,7 +10,7 @@ const Home = () => {
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-24 font-sans selection:bg-green-500 selection:text-black">
       
       {/* --- HERO SECTION --- */}
-      <section className="relative w-full px-6 md:px-20 py-20 flex flex-col items-center text-center">
+      <section className="relative w-full  px-6 md:px-20 py-20 flex flex-col items-center text-center">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-green-500/20 blur-[120px] rounded-full pointer-events-none" />
         
         <span className="inline-block py-1 px-3 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-green-400 mb-6">
@@ -49,20 +50,22 @@ const Home = () => {
           </div>
 
           {/* Card 2: Economy */}
-          <div id="economy" className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-yellow-500/50 transition-all">
-            <h3 className="text-2xl font-bold mb-2 text-yellow-400">Ghee Coins</h3>
-            <p className="text-sm text-gray-400 mb-6 font-mono uppercase tracking-widest">In-Game Currency</p>
-            <div className="space-y-3">
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span>Mint</span>
-                <span className="text-green-400">+100 GC</span>
-              </div>
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span>Burn</span>
-                <span className="text-red-400">-50 GC</span>
+          <Link to="/login/bridge">
+            <div id="economy" className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-yellow-500/50 transition-all">
+              <h3 className="text-2xl font-bold mb-2 text-yellow-400">Ghee Coins</h3>
+              <p className="text-sm text-gray-400 mb-6 font-mono uppercase tracking-widest">In-Game Currency</p>
+              <div className="space-y-3">
+                <div className="flex justify-between border-b border-white/10 pb-2">
+                  <span>Mint</span>
+                  <span className="text-green-400">+100 GC</span>
+                </div>
+                <div className="flex justify-between border-b border-white/10 pb-2">
+                  <span>Burn</span>
+                  <span className="text-red-400">-50 GC</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Card 3: NFT Rewards */}
           <div className="p-8 rounded-3xl bg-gradient-to-b from-purple-900/50 to-black border border-white/10 flex flex-col justify-between">
@@ -72,8 +75,17 @@ const Home = () => {
                 Win the match to mint a dynamic "Victor's Badge" on-chain.
               </p>
             </div>
-            <div className="mt-6 w-full h-24 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/30">
-               <span className="font-mono text-purple-300 text-xs">ERC-721 MINTABLE</span>
+            <div className="mt-6 w-full h-24 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-500/30 overflow-hidden gap-2">
+  
+              <img 
+                src="/image.png" 
+                alt="Winner NFT"
+                className="h-full object-contain"
+              />
+
+              <span className="font-mono text-purple-300 text-xs whitespace-nowrap">
+                ERC-721 MINTAB
+              </span>
             </div>
           </div>
 
@@ -132,7 +144,7 @@ const Home = () => {
       </section>
 
       <footer className="py-8 text-center text-gray-600 text-sm">
-        <p>BUILT BY TATHAGAT GUPTA • IIT ROORKEE</p>
+        <p>by-IIT ROORKEE</p>
       </footer>
     </div>
   );
