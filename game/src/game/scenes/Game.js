@@ -156,6 +156,16 @@ export class Game extends Scene {
             strokeThickness: 3,
             align: 'center'
         }).setOrigin(0.5).setDepth(300);
+
+
+        this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+            fontFamily: 'Arial',
+            fontSize: 24,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(300);
     }
 
     createShaders() {
@@ -507,6 +517,7 @@ void main(void) {
                     this.player.setPosition(centerX, centerY);
 
                     // Check if player reached winning tile
+                    console.log(tile.x, tile.y, this.winning_tile.x, this.winning_tile.y);
                     if (tile === this.winning_tile) {
                         this.handleWin();
                     }
@@ -586,14 +597,14 @@ void main(void) {
                 break;
 
             case 'gameStart':
-                this.statusText = this.add.text(512, 30, 'Connecting to game...', {
-                    fontFamily: 'Arial',
-                    fontSize: 24,
-                    color: '#ffffff',
-                    stroke: '#000000',
-                    strokeThickness: 4,
-                    align: 'center'
-                }).setOrigin(0.5);
+                // this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+                //     fontFamily: 'Arial',
+                //     fontSize: 24,
+                //     color: '#ffffff',
+                //     stroke: '#000000',
+                //     strokeThickness: 4,
+                //     align: 'center'
+                // }).setOrigin(0.5).setDepth(300);
                 this.playerNumber = data.playerNumber;
                 this.currentTurn = data.currentTurn;
                 this.opponentUsername = data.opponentUsername;
@@ -632,14 +643,14 @@ void main(void) {
                 break;
 
             case 'opponentDisconnected':
-                this.statusText = this.add.text(512, 30, 'Connecting to game...', {
-                    fontFamily: 'Arial',
-                    fontSize: 24,
-                    color: '#ffffff',
-                    stroke: '#000000',
-                    strokeThickness: 4,
-                    align: 'center'
-                }).setOrigin(0.5);
+                // this.statusText = this.add.text(512, 30, 'Connecting to game...', {
+                //     fontFamily: 'Arial',
+                //     fontSize: 24,
+                //     color: '#ffffff',
+                //     stroke: '#000000',
+                //     strokeThickness: 4,
+                //     align: 'center'
+                // }).setOrigin(0.5).setDepth(300);
                 this.statusText.setColor('#00ff00');
                 break;
 
@@ -710,10 +721,15 @@ void main(void) {
 
         this.statusText.setText(message);
         this.statusText.setFontSize(32);
-
-        this.time.delayedCall(5000, () => {
-            window.location.href = 'http://localhost:5173/dashboard';
-        });
+        if (data.isWinner) {
+            this.time.delayedCall(5000, () => {
+                window.location.href = 'http://localhost:5173/nftMint';
+            });
+        } else {
+            this.time.delayedCall(5000, () => {
+                window.location.href = 'http://localhost:5173/nftMint';
+            });
+        }
     }
 
     shutdown() {
