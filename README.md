@@ -360,7 +360,7 @@ npm test
         <img src="https://github.com/justwasif.png" width="100px;" alt=""/>
         <br /><sub><b>justwasif</b></sub>
       </a>
-      <br />Frontend & Blockchain Integration
+      <br />Frontend, Backend, Blockchain Integration
     </td>
   </tr>
 </table>
