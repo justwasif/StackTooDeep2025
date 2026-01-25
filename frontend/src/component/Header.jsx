@@ -3,7 +3,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const Header = () => {
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-[#f8e692] border-b-4 border-[#8100c8]">
+        <header className="fixed top-0 left-1/2 -translate-x-1/2 w-11/12 max-w-[1200px] z-50 flex items-center justify-between px-8 py-4 bg-[#f8e692] border-b-4 border-[#8100c8]"
+>
             {/* Logo Area */}
             <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-[#ff00d6] border-2 border-[#8100c8] rounded-lg animate-pulse" />
