@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Change this URL to match your backend port (e.g., http://localhost:8000)
-const API_URL = 'http://localhost:8000/api/v1'; 
+// Use the environment variable if available, otherwise fallback to the production Render URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://stacktoodeep2025.onrender.com/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
